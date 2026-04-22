@@ -1,0 +1,32 @@
+# BroDoc Backend — Python Dependencies
+# ======================================
+# Install with: pip install -r requirements.txt
+
+# ---- Web Framework ------------------------------------------ #
+fastapi==0.111.0
+uvicorn[standard]==0.29.0       # ASGI server to run FastAPI
+
+# ---- Database ----------------------------------------------- #
+sqlalchemy>=2.0.36              # ORM (2.0.30 incompatible with Python 3.14)
+asyncpg                         # Async PostgreSQL driver (latest, pre-built wheel)
+psycopg2-binary                 # Sync PostgreSQL driver (pre-built binary wheel)
+
+# ---- Settings & Validation ---------------------------------- #
+pydantic>=2.9.0
+pydantic-settings>=2.4.0
+
+# ---- Background Processing ---------------------------------- #
+celery==5.3.6
+redis==5.0.4                    # Redis client (sync for Celery + async)
+
+# ---- File Handling & Extraction ----------------------------- #
+python-multipart==0.0.9         # Required for FastAPI file uploads
+PyPDF2
+python-docx
+pillow
+
+# ---- AI Engine (Gemini) ------------------------------------- #
+google-genai
+
+# ---- Utilities ---------------------------------------------- #
+python-dotenv==1.0.1            # Load .env files
