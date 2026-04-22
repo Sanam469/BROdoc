@@ -1,0 +1,2 @@
+id,filename,status,title,category,summary,keywords,finalized_at
+96f4c692-4166-4edb-b615-d8062e5c37e5,project_brief.pdf,finalized,Async Document Processing Workflow,Educational Assignment,"A full-stack assignment focused on building an asynchronous system using FastAPI, Next.js, Celery, and Redis.","FastAPI, Celery, Redis, Next.js, Asynchronous",2026-04-23T01:45:30.123Z
