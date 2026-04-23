@@ -11,7 +11,7 @@ from app.db.database import init_db
 from app.api.routes import upload, jobs, progress, review, finalize, retry, export
 
 logging.basicConfig(
-    level=logging.DEBUG if settings.DEBUG else logging.INFO,
+    level=logging.INFO,
     format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
 )
 logger = logging.getLogger(__name__)
@@ -66,17 +66,6 @@ app.include_router(review.router,   prefix=API_PREFIX, tags=["Review"])
 app.include_router(finalize.router, prefix=API_PREFIX, tags=["Finalize"])
 app.include_router(retry.router,    prefix=API_PREFIX, tags=["Retry"])
 app.include_router(export.router,   prefix=API_PREFIX, tags=["Export"])
-
-@app.get("/api/v1/debug/models")
-async def list_available_models():
-    try:
-        from google import genai
-        from app.core.config import settings
-        client = genai.Client(api_key=settings.GEMINI_API_KEY)
-        models = client.models.list()
-        return {"models": [m.name for m in models]}
-    except Exception as e:
-        return {"error": str(e)}
 
 @app.get("/health", tags=["Health"])
 async def health_check():
