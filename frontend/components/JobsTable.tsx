@@ -190,7 +190,7 @@ export default function JobsTable({ initialData }: Props) {
                         }
                       }}
                     >
-                      <Trash2 size={16} />
+                      <span style={{ fontSize: 11, fontWeight: 'bold' }}>DELETE</span>
                     </button>
                   </td>
                 </tr>
