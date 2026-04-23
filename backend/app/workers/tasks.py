@@ -177,6 +177,7 @@ def extract_fields_via_gemini(file_path: str, filename: str, file_type: str) -> 
 def process_document(self, job_id: str):
     db = get_sync_db()
     logger.info(f"[Task] Starting process_document for job_id={job_id}")
+    db = get_sync_db()
 
     try:
         db_id = uuid.UUID(job_id) if isinstance(job_id, str) else job_id
@@ -186,20 +187,25 @@ def process_document(self, job_id: str):
             return {"error": "Job not found"}
 
         update_job(db, job_id, celery_task_id=self.request.id)
+        logger.info(f"[Task] Updated job {job_id} with celery_task_id={self.request.id}")
 
         update_job(db, job_id, status=JobStatus.PROCESSING, current_stage="job_started")
         publish_progress(job_id, "job_started", "in_progress", "Worker picked up the job.")
+        logger.info(f"[Task] Job {job_id} marked as PROCESSING")
 
         update_job(db, job_id, current_stage="document_parsing_started")
         publish_progress(job_id, "document_parsing_started", "in_progress", f"Sending {job.filename} to Gemini AI...")
+        logger.info(f"[Task] Job {job_id} parsing started for {job.filename}")
 
         extracted_data = extract_fields_via_gemini(job.file_path, job.filename, job.file_type)
+        logger.info(f"[Task] Job {job_id} extraction successful via Gemini")
 
         update_job(db, job_id, current_stage="field_extraction_completed")
         publish_progress(job_id, "field_extraction_completed", "completed", "Gemini successfully analyzed the document.")
 
         update_job(db, job_id, status=JobStatus.COMPLETED, current_stage="job_completed", extracted_data=extracted_data)
         publish_progress(job_id, "job_completed", "completed", "Processing complete. Document ready for review.")
+        logger.info(f"[Task] Job {job_id} COMPLETED")
 
         return {"job_id": job_id, "status": "completed"}
 

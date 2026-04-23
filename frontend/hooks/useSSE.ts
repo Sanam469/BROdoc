@@ -23,17 +23,19 @@ export function useSSE(jobId: string, enabled: boolean) {
       const token = getToken()
       if (!token) return
 
-      try {
+        console.log(`[SSE] 📡 Connecting to stream for Job: ${jobId}...`);
         const res = await fetch(`${API_BASE}/jobs/${jobId}/progress`, {
           headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal,
         })
 
         if (!res.ok || !res.body) {
+          console.error(`[SSE] ❌ Connection failed: ${res.status} ${res.statusText}`);
           setConnected(false)
           return
         }
 
+        console.log(`[SSE] ✅ Connected to stream!`);
         setConnected(true)
         const reader = res.body.getReader()
         const decoder = new TextDecoder()
@@ -51,6 +53,8 @@ export function useSSE(jobId: string, enabled: boolean) {
             if (line.startsWith('data: ')) {
               try {
                 const event: ProgressEvent = JSON.parse(line.slice(6))
+                console.log(`[SSE] 📥 Received Event:`, event);
+                
                 if (event.status === 'connected') continue
 
                 setEvents(prev => {

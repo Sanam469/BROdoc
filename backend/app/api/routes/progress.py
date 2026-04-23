@@ -80,14 +80,14 @@ async def stream_progress(
                 if message and message["type"] == "message":
                     try:
                         event_data = json.loads(message["data"])
+                        logger.info(f"[SSE] Event RECEIVED for {job_id}: {event_data.get('stage')} ({event_data.get('status')})")
                         yield format_sse(event_data)
 
                         if event_data.get("stage") in ("job_completed", "job_failed"):
                             logger.info(f"[SSE] Terminal stage received. Closing stream for {job_id}")
                             break
-
                     except json.JSONDecodeError:
-                        logger.warning(f"[SSE] Invalid JSON from PubSub: {message['data']}")
+                        logger.error(f"[SSE] Invalid JSON received on channel {channel}: {message['data']}")
 
                 else:
 
