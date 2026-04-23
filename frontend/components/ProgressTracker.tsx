@@ -51,10 +51,10 @@ export default function ProgressTracker({ currentStage, events, status }: Props)
           <div key={stage} className={`stage-item ${state !== 'pending' ? state : ''}`}>
             {}
             <div className={`stage-dot ${state}`}>
-              {state === 'done'    && <Check size={14} strokeWidth={3} />}
-              {state === 'active'  && <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />}
-              {state === 'failed'  && <X size={14} strokeWidth={3} />}
-              {state === 'pending' && <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700 }}>{idx + 1}</span>}
+              {state === 'done'    ? <Check size={14} strokeWidth={3} /> : null}
+              {state === 'active'  ? <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> : null}
+              {state === 'failed'  ? <X size={14} strokeWidth={3} /> : null}
+              {state === 'pending' ? <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700 }}>{idx + 1}</span> : null}
             </div>
 
             {}

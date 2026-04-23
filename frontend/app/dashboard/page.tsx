@@ -104,8 +104,8 @@ function ProgressPanel({ jobId, onClose }: { jobId: string; onClose: () => void 
       {events.length > 0 && (
         <div style={{ borderTop: '1px solid var(--border)', padding: '12px 16px', maxHeight: 140, overflowY: 'auto' }}>
           <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Event Log</div>
-          {[...events].reverse().map((ev, i) => (
-            <div key={i} style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', paddingBottom: 4, borderBottom: '1px dashed var(--border)', display: 'flex', gap: 8 }}>
+          {[...events].reverse().map((ev) => (
+            <div key={ev.timestamp + ev.stage} style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', paddingBottom: 4, borderBottom: '1px dashed var(--border)', display: 'flex', gap: 8 }}>
               <span style={{ color: 'var(--text-muted)', flexShrink: 0 }}>{new Date(ev.timestamp).toLocaleTimeString()}</span>
               <span>{ev.message}</span>
             </div>
