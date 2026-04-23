@@ -6,7 +6,7 @@ import { useAuth } from './AuthProvider'
 
 export default function Sidebar() {
   const path = usePathname()
-  const { user, logout } = useAuth()
+  const { logout } = useAuth()
 
   return (
     <aside className="sidebar">

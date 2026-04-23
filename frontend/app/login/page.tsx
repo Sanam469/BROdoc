@@ -156,7 +156,7 @@ export default function LoginPage() {
                   </button>
                 </>
               ) : (
-                <>Don't have an account?{' '}
+                <>Don&apos;t have an account?{' '}
                   <button type="button" className="toggle-link" onClick={() => {
                     setLoading(true)
                     setTimeout(() => { setIsRegister(true); setError(null); setLoading(false) }, 300)
