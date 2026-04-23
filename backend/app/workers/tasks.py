@@ -16,7 +16,7 @@ import docx
 from google import genai
 from google.genai import types
 
-from app.workers.celery_app import celery_app
+from app.workers.base import celery_app
 from app.core.config import settings
 from app.models.document import DocumentJob, JobStatus
 
