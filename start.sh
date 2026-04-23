@@ -32,6 +32,15 @@ elif [ "$SERVICE_TYPE" = "backend" ]; then
   # Start FastAPI with uvicorn. Render provides the $PORT environment variable.
   python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
 
+elif [ "$SERVICE_TYPE" = "worker" ]; then
+  echo "🚀 Starting Celery Worker with dummy port listener..."
+  cd backend
+  # Start the Celery worker in the background
+  celery -A app.workers.celery_app worker -Q documents --loglevel=info &
+  # Start a dummy server to satisfy Render's port check for free web services
+  echo "📡 Starting dummy health check on port ${PORT:-8080}..."
+  python -m http.server ${PORT:-8080}
+
 elif [ "$SERVICE_TYPE" = "combo" ]; then
   echo "🚀 Starting COMBO (Backend + Worker) Service..."
   cd backend
