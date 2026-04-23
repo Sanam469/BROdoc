@@ -173,3 +173,4 @@ out/
 pgdata/
 pg.log
 scratch/
+backend/uploads/
