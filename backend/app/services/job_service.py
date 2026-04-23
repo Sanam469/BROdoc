@@ -193,11 +193,7 @@ async def delete_job(db: AsyncSession, job_id: str) -> None:
     
     job = await get_job_by_id(db, job_id)
 
-    if job.status == JobStatus.PROCESSING:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot delete a job that is actively processing. Wait for it to finish.",
-        )
+    # Allow deleting even processing jobs to handle stuck/ghost tasks
 
     if job.file_path and os.path.exists(job.file_path):
         try:
