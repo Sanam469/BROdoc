@@ -75,8 +75,14 @@ async def upload_documents(
             user_id=str(current_user.id),
         )
 
-        process_document.delay(str(job.id))
-        logger.info(f"[Upload] Queued job {job.id} for file: {file.filename}")
+        # Dispatch to the specific queue the worker is listening to
+        task = process_document.apply_async(args=[str(job.id)], queue='documents')
+        
+        # Save the task ID so the UI can track it
+        job.celery_task_id = task.id
+        db.commit()
+        
+        logger.info(f"[Upload] Dispatched Task {task.id} to 'documents' queue for job {job.id}")
 
         responses.append(UploadResponse(
             job_id=job.id,
