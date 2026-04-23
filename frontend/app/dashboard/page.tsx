@@ -26,7 +26,10 @@ function FileIcon({ type }: { type: string }) {
 
 function ProgressPanel({ jobId, onClose }: { jobId: string; onClose: () => void }) {
   const [job, setJob] = useState<Job | null>(null)
+  const [mounted, setMounted] = useState(false)
   const { events, connected } = useSSE(jobId, true)
+
+  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
     let alive = true
