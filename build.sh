@@ -13,7 +13,7 @@ set -e
 
 if [ -z "$SERVICE_TYPE" ]; then
   echo "❌ Error: SERVICE_TYPE environment variable is not set."
-  echo "Please set SERVICE_TYPE to 'frontend', 'backend', or 'worker' in Render settings."
+  echo "Please set SERVICE_TYPE to 'frontend', 'backend', 'worker' or 'combo' in Render settings."
   exit 1
 fi
 
@@ -23,7 +23,7 @@ if [ "$SERVICE_TYPE" = "frontend" ]; then
   npm install
   npm run build
 
-elif [ "$SERVICE_TYPE" = "backend" ] || [ "$SERVICE_TYPE" = "worker" ]; then
+elif [ "$SERVICE_TYPE" = "backend" ] || [ "$SERVICE_TYPE" = "worker" ] || [ "$SERVICE_TYPE" = "combo" ]; then
   echo "📦 Building Python Backend..."
   cd backend
   # Install dependencies from the backend folder
@@ -31,5 +31,6 @@ elif [ "$SERVICE_TYPE" = "backend" ] || [ "$SERVICE_TYPE" = "worker" ]; then
 
 else
   echo "❌ Error: Invalid SERVICE_TYPE '$SERVICE_TYPE'."
+  echo "Valid values: 'frontend', 'backend', 'worker', 'combo'."
   exit 1
 fi
