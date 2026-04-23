@@ -176,8 +176,8 @@ export default function JobsTable({ initialData }: Props) {
                           try {
                             const { deleteJob } = await import('@/lib/api');
                             await deleteJob(job.id);
-                            reload(params); // Refresh the list
-                          } catch (err) {
+                            reload(params);
+                          } catch {
                             alert('Failed to delete job');
                           }
                         }
