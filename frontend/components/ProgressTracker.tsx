@@ -1,5 +1,4 @@
 'use client'
-import { useState, useEffect } from 'react'
 import { ProgressEvent, STAGE_LABELS } from '@/lib/api'
 import { Check, X, Clock } from 'lucide-react'
 
@@ -20,9 +19,6 @@ interface Props {
 }
 
 export default function ProgressTracker({ currentStage, events, status }: Props) {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => { setMounted(true) }, [])
-
   const stageIndex = STAGES.indexOf(currentStage || 'job_queued')
   const failed = status === 'failed'
 
@@ -40,7 +36,7 @@ export default function ProgressTracker({ currentStage, events, status }: Props)
 
   const getEventTime = (stage: string): string | null => {
     const ev = [...events].reverse().find(e => e.stage === stage)
-    if (!ev || !mounted) return null
+    if (!ev) return null
     return new Date(ev.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   }
 
@@ -55,10 +51,10 @@ export default function ProgressTracker({ currentStage, events, status }: Props)
           <div key={stage} className={`stage-item ${state !== 'pending' ? state : ''}`}>
             {}
             <div className={`stage-dot ${state}`}>
-              {state === 'done'    ? <Check size={14} strokeWidth={3} /> : null}
-              {state === 'active'  ? <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> : null}
-              {state === 'failed'  ? <X size={14} strokeWidth={3} /> : null}
-              {state === 'pending' ? <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700 }}>{idx + 1}</span> : null}
+              {state === 'done'    && <Check size={14} strokeWidth={3} />}
+              {state === 'active'  && <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />}
+              {state === 'failed'  && <X size={14} strokeWidth={3} />}
+              {state === 'pending' && <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700 }}>{idx + 1}</span>}
             </div>
 
             {}

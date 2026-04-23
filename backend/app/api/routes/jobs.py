@@ -3,8 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 
 from app.db.database import get_db
-from app.core.deps import get_current_user
-from app.models.user import User
 from app.services.job_service import get_job_by_id, list_jobs, delete_job
 from app.schemas.document import JobDetailResponse, JobListResponse, JobsQueryParams, JobStatus
 
@@ -13,7 +11,7 @@ router = APIRouter()
 @router.get(
     "/jobs",
     summary="List all document jobs",
-    description="Returns paginated list of jobs for the authenticated user.",
+    description="Returns paginated list of jobs. Supports search, filter by status, and sorting.",
 )
 async def get_jobs(
 
@@ -24,7 +22,6 @@ async def get_jobs(
     page:     int                 = Query(1, ge=1, description="Page number"),
     per_page: int                 = Query(20, ge=1, le=100, description="Items per page"),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     
     params = JobsQueryParams(
@@ -36,7 +33,7 @@ async def get_jobs(
         per_page=per_page,
     )
 
-    result = await list_jobs(db, params, user_id=str(current_user.id))
+    result = await list_jobs(db, params)
 
     return {
         "items":       [JobListResponse.model_validate(job) for job in result["items"]],
@@ -55,10 +52,9 @@ async def get_jobs(
 async def get_job(
     job_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     
-    job = await get_job_by_id(db, job_id, user_id=str(current_user.id))
+    job = await get_job_by_id(db, job_id)
     return JobDetailResponse.model_validate(job)
 
 @router.delete(
@@ -70,8 +66,7 @@ async def get_job(
 async def delete_job_route(
     job_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     
-    await delete_job(db, job_id, user_id=str(current_user.id))
+    await delete_job(db, job_id)
     return None

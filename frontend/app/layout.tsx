@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import AppShell from '@/components/AppShell'
+import Sidebar from '@/components/Sidebar'
 
 export const metadata: Metadata = {
   title: 'BroDoc — Async Document Processing',
@@ -11,7 +11,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <AppShell>{children}</AppShell>
+        <div className="layout">
+          <Sidebar />
+          <main className="main-content">
+            {children}
+          </main>
+        </div>
       </body>
     </html>
   )

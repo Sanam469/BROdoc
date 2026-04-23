@@ -9,8 +9,6 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
-from app.core.deps import get_current_user
-from app.models.user import User
 from app.services.job_service import get_job_by_id
 from app.models.document import JobStatus
 from app.core.config import settings
@@ -31,10 +29,9 @@ def format_sse(data: dict) -> str:
 async def stream_progress(
     job_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     
-    job = await get_job_by_id(db, job_id, user_id=str(current_user.id))
+    job = await get_job_by_id(db, job_id)
 
     async def event_generator():
 
@@ -53,7 +50,7 @@ async def stream_progress(
             return
 
         channel = f"{settings.REDIS_PUBSUB_CHANNEL}:{job_id}"
-        redis_conn = aioredis.from_url(settings.REDIS_URL, decode_responses=True, ssl_cert_reqs="none")
+        redis_conn = aioredis.from_url(settings.REDIS_URL, decode_responses=True)
         pubsub = redis_conn.pubsub()
 
         try:
@@ -80,20 +77,20 @@ async def stream_progress(
                 if message and message["type"] == "message":
                     try:
                         event_data = json.loads(message["data"])
-                        logger.info(f"[SSE] Event RECEIVED for {job_id}: {event_data.get('stage')} ({event_data.get('status')})")
                         yield format_sse(event_data)
 
                         if event_data.get("stage") in ("job_completed", "job_failed"):
                             logger.info(f"[SSE] Terminal stage received. Closing stream for {job_id}")
                             break
+
                     except json.JSONDecodeError:
-                        logger.error(f"[SSE] Invalid JSON received on channel {channel}: {message['data']}")
+                        logger.warning(f"[SSE] Invalid JSON from PubSub: {message['data']}")
 
                 else:
 
                     yield ": heartbeat\n\n"
                     elapsed += 1
-                    await asyncio.sleep(1)  
+                    await asyncio.sleep(0)  
 
         except asyncio.CancelledError:
 

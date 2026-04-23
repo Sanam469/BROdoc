@@ -7,8 +7,6 @@ from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
-from app.core.deps import get_current_user
-from app.models.user import User
 from app.services.job_service import create_job
 from app.schemas.document import UploadResponse
 from app.workers.tasks import process_document
@@ -29,7 +27,6 @@ os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 async def upload_documents(
     files: List[UploadFile] = File(..., description="One or more document files"),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     
     if not files:
@@ -72,21 +69,10 @@ async def upload_documents(
             file_path=file_path,
             file_size=len(content),
             file_type=ext,
-            user_id=str(current_user.id),
         )
 
-        try:
-            # Dispatch to the specific queue the worker is listening to
-            task = process_document.apply_async(args=[str(job.id)], queue='documents')
-            
-            # Save the task ID so the UI can track it
-            job.celery_task_id = task.id
-            await db.commit()
-            
-            logger.info(f"[Upload] Dispatched Task {task.id} to 'documents' queue for job {job.id}")
-        except Exception as e:
-            logger.error(f"[Upload] CRITICAL: Failed to dispatch task to Celery: {str(e)}")
-            # Even if dispatch fails, we've saved the job. The user can retry later.
+        process_document.delay(str(job.id))
+        logger.info(f"[Upload] Queued job {job.id} for file: {file.filename}")
 
         responses.append(UploadResponse(
             job_id=job.id,

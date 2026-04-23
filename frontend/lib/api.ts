@@ -1,5 +1,3 @@
-import { getToken, clearToken } from './auth'
-
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
 
 export interface Job {
@@ -49,23 +47,12 @@ export interface ProgressEvent {
   timestamp: string
 }
 
-function authHeaders(): Record<string, string> {
-  const token = getToken()
-  if (token) return { Authorization: `Bearer ${token}` }
-  return {}
-}
-
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...authHeaders(), ...options?.headers },
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
     ...options,
   })
   if (!res.ok) {
-    if (res.status === 401) {
-      clearToken()
-      window.location.href = '/login'
-      throw new Error('Session expired')
-    }
     const err = await res.json().catch(() => ({ detail: res.statusText }))
     throw new Error(err.detail || `HTTP ${res.status}`)
   }
@@ -76,17 +63,8 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 export async function uploadDocuments(files: File[]): Promise<UploadResponse[]> {
   const form = new FormData()
   files.forEach(f => form.append('files', f))
-  const res = await fetch(`${API_BASE}/upload`, {
-    method: 'POST',
-    body: form,
-    headers: { ...authHeaders() },
-  })
+  const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: form })
   if (!res.ok) {
-    if (res.status === 401) {
-      clearToken()
-      window.location.href = '/login'
-      throw new Error('Session expired')
-    }
     const err = await res.json().catch(() => ({ detail: res.statusText }))
     throw new Error(err.detail || `Upload failed`)
   }
@@ -135,9 +113,7 @@ export async function deleteJob(id: string): Promise<void> {
 }
 
 export async function exportJob(id: string, format: 'json' | 'csv'): Promise<void> {
-  const res = await fetch(`${API_BASE}/jobs/${id}/export?format=${format}`, {
-    headers: { ...authHeaders() },
-  })
+  const res = await fetch(`${API_BASE}/jobs/${id}/export?format=${format}`)
   if (!res.ok) throw new Error(`Export failed`)
   const blob = await res.blob()
   const url = URL.createObjectURL(blob)

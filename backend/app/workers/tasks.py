@@ -2,7 +2,6 @@ import time
 import json
 import logging
 import os
-import uuid
 from datetime import datetime, timezone
 
 import redis
@@ -16,7 +15,7 @@ import docx
 from google import genai
 from google.genai import types
 
-from app.workers.base import celery_app
+from app.workers.celery_app import celery_app
 from app.core.config import settings
 from app.models.document import DocumentJob, JobStatus
 
@@ -45,7 +44,7 @@ SyncSessionLocal = sessionmaker(
 def get_sync_db() -> Session:
     return SyncSessionLocal()
 
-redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True, ssl_cert_reqs="none")
+redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
 
 def publish_progress(job_id: str, stage: str, status: str, message: str):
     event = {
@@ -63,15 +62,10 @@ def publish_progress(job_id: str, stage: str, status: str, message: str):
         logger.error(f"[PubSub] Publish failed for job {job_id}: {e}")
 
 def update_job(db: Session, job_id: str, **kwargs):
-    try:
-        db_id = uuid.UUID(job_id) if isinstance(job_id, str) else job_id
-        db.query(DocumentJob).filter(
-            DocumentJob.id == db_id
-        ).update({**kwargs, "updated_at": datetime.now(timezone.utc)})
-        db.commit()
-    except Exception as e:
-        logger.error(f"[Update Error] Failed to update job {job_id}: {e}")
-        db.rollback()
+    db.query(DocumentJob).filter(
+        DocumentJob.id == job_id
+    ).update({**kwargs, "updated_at": datetime.now(timezone.utc)})
+    db.commit()
 
 def extract_document_text(file_path: str, filename: str) -> str:
     
@@ -143,7 +137,7 @@ def extract_fields_via_gemini(file_path: str, filename: str, file_type: str) -> 
         contents = [f"{prompt}\n\nDocument Text:\n{raw_text[:30000]}"]
 
     response = genai_client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-2.5-flash',
         contents=contents,
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
@@ -176,32 +170,30 @@ def extract_fields_via_gemini(file_path: str, filename: str, file_type: str) -> 
     queue="documents",          
 )
 def process_document(self, job_id: str):
-    print(f"DEBUG: Worker received task for job {job_id}")
-    logger.critical(f"DEBUG: Worker received task for job {job_id}")
-    
     db = get_sync_db()
+    logger.info(f"[Task] Starting process_document for job_id={job_id}")
+
     try:
-        print(f"DEBUG: Connecting to DB for job {job_id}")
-        db_id = uuid.UUID(job_id) if isinstance(job_id, str) else job_id
-        job = db.query(DocumentJob).filter(DocumentJob.id == db_id).first()
-        
+        job = db.query(DocumentJob).filter(DocumentJob.id == job_id).first()
         if not job:
-            print(f"DEBUG: ERROR - Job {job_id} NOT FOUND in DB")
-            logger.error(f"[Task Error] Job {job_id} not found in database!")
             return {"error": "Job not found"}
 
-        print(f"DEBUG: Job found: {job.filename}. Updating status to PROCESSING")
-        update_job(db, job_id, status=JobStatus.PROCESSING, current_stage="job_started")
-        publish_progress(job_id, "job_started", "in_progress", "Worker started processing.")
+        update_job(db, job_id, celery_task_id=self.request.id)
 
-        print(f"DEBUG: Extracting text/image via Gemini for {job.file_path}")
+        update_job(db, job_id, status=JobStatus.PROCESSING, current_stage="job_started")
+        publish_progress(job_id, "job_started", "in_progress", "Worker picked up the job.")
+
+        update_job(db, job_id, current_stage="document_parsing_started")
+        publish_progress(job_id, "document_parsing_started", "in_progress", f"Sending {job.filename} to Gemini AI...")
+
         extracted_data = extract_fields_via_gemini(job.file_path, job.filename, job.file_type)
-        
-        print(f"DEBUG: Gemini Extraction Success: {json.dumps(extracted_data)[:100]}...")
+
+        update_job(db, job_id, current_stage="field_extraction_completed")
+        publish_progress(job_id, "field_extraction_completed", "completed", "Gemini successfully analyzed the document.")
+
         update_job(db, job_id, status=JobStatus.COMPLETED, current_stage="job_completed", extracted_data=extracted_data)
-        publish_progress(job_id, "job_completed", "completed", "Processing complete.")
-        
-        print(f"DEBUG: Task COMPLETED for job {job_id}")
+        publish_progress(job_id, "job_completed", "completed", "Processing complete. Document ready for review.")
+
         return {"job_id": job_id, "status": "completed"}
 
     except Exception as exc:

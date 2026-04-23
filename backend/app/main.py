@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.db.database import init_db
 
-from app.api.routes import upload, jobs, progress, review, finalize, retry, export, auth
+from app.api.routes import upload, jobs, progress, review, finalize, retry, export
 
 logging.basicConfig(
     level=logging.DEBUG if settings.DEBUG else logging.INFO,
@@ -48,33 +48,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-from fastapi import Request, Response
-
-@app.middleware("http")
-async def add_cors_headers(request: Request, call_next):
-    # Handle preflight (OPTIONS) requests
-    if request.method == "OPTIONS":
-        response = Response()
-    else:
-        response = await call_next(request)
-    
-    origin = request.headers.get("origin")
-    if origin:
-        response.headers["Access-Control-Allow-Origin"] = origin
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
-        response.headers["Access-Control-Allow-Credentials"] = "true"
-    elif request.method == "OPTIONS":
-        # Even without origin, preflight needs these
-        response.headers["Access-Control-Allow-Origin"] = "*"
-        response.headers["Access-Control-Allow-Methods"] = "*"
-        response.headers["Access-Control-Allow-Headers"] = "*"
-
-    return response
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 API_PREFIX = "/api/v1"
 
-app.include_router(auth.router,     prefix=API_PREFIX, tags=["Auth"])
 app.include_router(upload.router,   prefix=API_PREFIX, tags=["Upload"])
 app.include_router(jobs.router,     prefix=API_PREFIX, tags=["Jobs"])
 app.include_router(progress.router, prefix=API_PREFIX, tags=["Progress (SSE)"])

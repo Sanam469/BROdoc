@@ -17,19 +17,16 @@ logger = logging.getLogger(__name__)
 
 MAX_RETRY_COUNT = 3
 
-
 async def create_job(
     db: AsyncSession,
     filename: str,
     file_path: str,
     file_size: int,
     file_type: str,
-    user_id: str,
 ) -> DocumentJob:
     
     job = DocumentJob(
         id=uuid.uuid4(),
-        user_id=user_id,
         filename=filename,
         file_path=file_path,
         file_size=file_size,
@@ -41,11 +38,10 @@ async def create_job(
     db.add(job)
     await db.commit()
     await db.refresh(job)
-    logger.info(f"[JobService] Created job {job.id} for file: {filename} (user: {user_id})")
+    logger.info(f"[JobService] Created job {job.id} for file: {filename}")
     return job
 
-
-async def get_job_by_id(db: AsyncSession, job_id: str, user_id: str) -> DocumentJob:
+async def get_job_by_id(db: AsyncSession, job_id: str) -> DocumentJob:
     
     result = await db.execute(
         select(DocumentJob).where(DocumentJob.id == job_id)
@@ -57,24 +53,14 @@ async def get_job_by_id(db: AsyncSession, job_id: str, user_id: str) -> Document
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Job {job_id} not found.",
         )
-
-    # Ownership check — only the owner can access their jobs
-    if job.user_id is not None and str(job.user_id) != str(user_id):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Job {job_id} not found.",
-        )
-
     return job
-
 
 async def list_jobs(
     db: AsyncSession,
     params: JobsQueryParams,
-    user_id: str,
 ) -> dict:
     
-    query = select(DocumentJob).where(DocumentJob.user_id == user_id)
+    query = select(DocumentJob)
 
     if params.search:
         query = query.where(
@@ -114,15 +100,13 @@ async def list_jobs(
         "total_pages": (total + params.per_page - 1) // params.per_page,
     }
 
-
 async def update_review(
     db: AsyncSession,
     job_id: str,
     updates: ReviewUpdateRequest,
-    user_id: str,
 ) -> DocumentJob:
     
-    job = await get_job_by_id(db, job_id, user_id)
+    job = await get_job_by_id(db, job_id)
 
     if job.status not in (JobStatus.COMPLETED, JobStatus.FINALIZED):
         raise HTTPException(
@@ -151,10 +135,9 @@ async def update_review(
     logger.info(f"[JobService] Review updated for job {job_id}: {list(patch.keys())}")
     return job
 
-
-async def finalize_job(db: AsyncSession, job_id: str, user_id: str) -> DocumentJob:
+async def finalize_job(db: AsyncSession, job_id: str) -> DocumentJob:
     
-    job = await get_job_by_id(db, job_id, user_id)
+    job = await get_job_by_id(db, job_id)
 
     if job.status != JobStatus.COMPLETED:
         raise HTTPException(
@@ -172,10 +155,9 @@ async def finalize_job(db: AsyncSession, job_id: str, user_id: str) -> DocumentJ
     logger.info(f"[JobService] Job {job_id} finalized at {job.finalized_at}")
     return job
 
-
-async def retry_job(db: AsyncSession, job_id: str, user_id: str) -> DocumentJob:
+async def retry_job(db: AsyncSession, job_id: str) -> DocumentJob:
     
-    job = await get_job_by_id(db, job_id, user_id)
+    job = await get_job_by_id(db, job_id)
 
     if job.status == JobStatus.QUEUED:
         logger.info(f"[JobService] Job {job_id} already queued. Skipping retry.")
@@ -207,10 +189,9 @@ async def retry_job(db: AsyncSession, job_id: str, user_id: str) -> DocumentJob:
     logger.info(f"[JobService] Job {job_id} reset for retry")
     return job
 
-
-async def delete_job(db: AsyncSession, job_id: str, user_id: str) -> None:
+async def delete_job(db: AsyncSession, job_id: str) -> None:
     
-    job = await get_job_by_id(db, job_id, user_id)
+    job = await get_job_by_id(db, job_id)
 
     if job.status == JobStatus.PROCESSING:
         raise HTTPException(

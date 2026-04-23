@@ -1,12 +1,11 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, ClipboardList, LogOut } from 'lucide-react'
-import { useAuth } from './AuthProvider'
+import { FileText, LayoutDashboard, ClipboardList } from 'lucide-react'
 
 export default function Sidebar() {
   const path = usePathname()
-  const { logout } = useAuth()
+  const isJobDetail = path.startsWith('/jobs/')
 
   return (
     <aside className="sidebar">
@@ -36,43 +35,17 @@ export default function Sidebar() {
         </Link>
       </nav>
 
-      {/* Developed By */}
       <div style={{ padding: '0 16px 16px' }}>
         <div style={{
-          background: 'rgba(255,255,255,0.03)',
-          border: '1px solid rgba(255,255,255,0.06)',
+          background: 'rgba(0,237,100,0.05)',
+          border: '1px solid rgba(0,237,100,0.15)',
           borderRadius: 'var(--radius-md)',
-          padding: '14px 16px',
+          padding: '16px',
         }}>
           <div style={{ fontSize: 10, color: 'var(--green-primary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4 }}>Developed By</div>
           <div style={{ fontSize: 13, color: '#FFFFFF', fontWeight: 600 }}>ER Sanamdeep Singh</div>
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>NIT Srinagar</div>
         </div>
-      </div>
-
-      {/* Logout */}
-      <div style={{ padding: '0 16px 16px' }}>
-        <button
-          onClick={logout}
-          className="nav-link"
-          style={{
-            width: '100%',
-            background: 'rgba(219, 48, 48, 0.1)',
-            border: '1px solid rgba(219, 48, 48, 0.2)',
-            borderRadius: 'var(--radius-sm)',
-            color: '#FF6B6B',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            fontSize: 13,
-            fontWeight: 600,
-            fontFamily: 'inherit',
-          }}
-        >
-          <LogOut size={16} />
-          Sign Out
-        </button>
       </div>
 
       <div className="sidebar-footer">
