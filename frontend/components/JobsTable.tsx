@@ -165,14 +165,21 @@ export default function JobsTable({ initialData }: Props) {
                       : <span style={{ color: 'var(--text-muted)' }}>—</span>
                     }
                   </td>
-                  <td>
+                  <td style={{ width: 50, textAlign: 'center' }}>
                     <button 
                       className="btn btn-ghost btn-sm" 
-                      style={{ color: 'var(--status-failed)', padding: '4px 8px' }}
+                      style={{ 
+                        color: 'var(--status-failed)', 
+                        padding: '4px 8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '100%'
+                      }}
                       title="Delete Job"
                       onClick={async (e) => {
                         e.stopPropagation();
-                        if (confirm('Delete this job?')) {
+                        if (confirm('Permanently delete this job?')) {
                           try {
                             const { deleteJob } = await import('@/lib/api');
                             await deleteJob(job.id);
