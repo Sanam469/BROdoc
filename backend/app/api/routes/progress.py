@@ -53,7 +53,7 @@ async def stream_progress(
             return
 
         channel = f"{settings.REDIS_PUBSUB_CHANNEL}:{job_id}"
-        redis_conn = aioredis.from_url(settings.REDIS_URL, decode_responses=True)
+        redis_conn = aioredis.from_url(settings.REDIS_URL, decode_responses=True, ssl_cert_reqs="none")
         pubsub = redis_conn.pubsub()
 
         try:

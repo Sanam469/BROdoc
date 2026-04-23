@@ -44,7 +44,7 @@ SyncSessionLocal = sessionmaker(
 def get_sync_db() -> Session:
     return SyncSessionLocal()
 
-redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
+redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True, ssl_cert_reqs="none")
 
 def publish_progress(job_id: str, stage: str, status: str, message: str):
     event = {
