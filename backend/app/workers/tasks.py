@@ -142,7 +142,7 @@ def extract_fields_via_gemini(file_path: str, filename: str, file_type: str) -> 
         contents = [f"{prompt}\n\nDocument Text:\n{raw_text[:30000]}"]
 
     response = genai_client.models.generate_content(
-        model='gemini-2.5-flash',
+        model='gemini-1.5-flash',
         contents=contents,
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
