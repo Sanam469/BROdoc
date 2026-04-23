@@ -23,6 +23,7 @@ export function useSSE(jobId: string, enabled: boolean) {
       const token = getToken()
       if (!token) return
 
+      try {
         console.log(`[SSE] 📡 Connecting to stream for Job: ${jobId}...`);
         const res = await fetch(`${API_BASE}/jobs/${jobId}/progress`, {
           headers: { Authorization: `Bearer ${token}` },
