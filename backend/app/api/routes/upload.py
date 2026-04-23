@@ -75,14 +75,18 @@ async def upload_documents(
             user_id=str(current_user.id),
         )
 
-        # Dispatch to the specific queue the worker is listening to
-        task = process_document.apply_async(args=[str(job.id)], queue='documents')
-        
-        # Save the task ID so the UI can track it
-        job.celery_task_id = task.id
-        db.commit()
-        
-        logger.info(f"[Upload] Dispatched Task {task.id} to 'documents' queue for job {job.id}")
+        try:
+            # Dispatch to the specific queue the worker is listening to
+            task = process_document.apply_async(args=[str(job.id)], queue='documents')
+            
+            # Save the task ID so the UI can track it
+            job.celery_task_id = task.id
+            await db.commit()
+            
+            logger.info(f"[Upload] Dispatched Task {task.id} to 'documents' queue for job {job.id}")
+        except Exception as e:
+            logger.error(f"[Upload] CRITICAL: Failed to dispatch task to Celery: {str(e)}")
+            # Even if dispatch fails, we've saved the job. The user can retry later.
 
         responses.append(UploadResponse(
             job_id=job.id,
