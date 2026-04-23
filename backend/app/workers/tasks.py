@@ -136,8 +136,8 @@ def extract_fields_via_gemini(file_path: str, filename: str, file_type: str) -> 
 
         contents = [f"{prompt}\n\nDocument Text:\n{raw_text[:30000]}"]
 
-    # Try multiple common model names in order of reliability
-    model_names = ['gemini-1.5-flash-latest', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0-pro', 'gemini-1.5-flash-002']
+    # Try the exact models available in your account (including the future 2.5/2.0 models!)
+    model_names = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest']
     
     last_error = None
     response = None
