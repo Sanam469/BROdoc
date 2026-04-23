@@ -136,14 +136,25 @@ def extract_fields_via_gemini(file_path: str, filename: str, file_type: str) -> 
 
         contents = [f"{prompt}\n\nDocument Text:\n{raw_text[:30000]}"]
 
-    response = genai_client.models.generate_content(
-        model='gemini-1.5-flash',
-        contents=contents,
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            temperature=0.1,
+    try:
+        response = genai_client.models.generate_content(
+            model='gemini-1.5-flash-latest',
+            contents=contents,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.1,
+            )
         )
-    )
+    except Exception as e:
+        print(f"⚠️ Primary model failed, trying fallback: {e}")
+        response = genai_client.models.generate_content(
+            model='gemini-1.5-pro',
+            contents=contents,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.1,
+            )
+        )
 
     try:
         parsed = json.loads(response.text)
