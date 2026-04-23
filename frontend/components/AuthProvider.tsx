@@ -69,24 +69,21 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     }, 500)
   }
 
-  // Show loading spinner globally while checking auth to prevent FOUC / flashes
-  if (loading) {
-    return (
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        minHeight: '100vh', background: 'var(--bg-page)',
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <span className="spinner" style={{ width: 32, height: 32, marginBottom: 16, display: 'block', margin: '0 auto 16px' }} />
-          <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>Loading BroDoc...</span>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <AuthContext.Provider value={{ user, loading, logout: handleLogout }}>
-      {children}
+      {loading ? (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          minHeight: '100vh', background: 'var(--bg-page)',
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <span className="spinner" style={{ width: 32, height: 32, marginBottom: 16, display: 'block', margin: '0 auto 16px' }} />
+            <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>Loading BroDoc...</span>
+          </div>
+        </div>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   )
 }
