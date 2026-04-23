@@ -351,22 +351,22 @@ export default function DashboardPage() {
 
         { }
         <div className="stats-grid">
-          {[
-            { label: 'Total Jobs', val: data.total, icon: <Database size={20} />, bg: 'var(--status-queued-bg)', col: 'var(--text-muted)' },
-            { label: 'Processing', val: counts.processing, icon: <Clock size={20} />, bg: 'var(--status-processing-bg)', col: 'var(--blue-accent)' },
-            { label: 'Completed', val: counts.completed, icon: <CheckCircle2 size={20} />, bg: 'var(--status-completed-bg)', col: 'var(--green-dark)' },
-            { label: 'Failed', val: counts.failed, icon: <AlertCircle size={20} />, bg: 'var(--status-failed-bg)', col: 'var(--status-failed)' },
-          ].map((s, i) => (
-            <div key={s.label} className="stat-card animate-fadeinup" style={{ animationDelay: `${i * 50}ms` }}>
-              <div className="stat-icon-box" style={{ background: s.bg, color: s.col }}>
-                {s.icon}
-              </div>
-              <div>
-                <div className="stat-label">{s.label}</div>
-                <div className="stat-value">{s.val}</div>
-              </div>
-            </div>
-          ))}
+          <div className="stat-card animate-fadeinup">
+            <div className="stat-icon-box" style={{ background: 'var(--status-queued-bg)', color: 'var(--text-muted)' }}><Database size={20} /></div>
+            <div><div className="stat-label">Total Jobs</div><div className="stat-value">{data.total}</div></div>
+          </div>
+          <div className="stat-card animate-fadeinup" style={{ animationDelay: '50ms' }}>
+            <div className="stat-icon-box" style={{ background: 'var(--status-processing-bg)', color: 'var(--blue-accent)' }}><Clock size={20} /></div>
+            <div><div className="stat-label">Processing</div><div className="stat-value">{counts.processing}</div></div>
+          </div>
+          <div className="stat-card animate-fadeinup" style={{ animationDelay: '100ms' }}>
+            <div className="stat-icon-box" style={{ background: 'var(--status-completed-bg)', color: 'var(--green-dark)' }}><CheckCircle2 size={20} /></div>
+            <div><div className="stat-label">Completed</div><div className="stat-value">{counts.completed}</div></div>
+          </div>
+          <div className="stat-card animate-fadeinup" style={{ animationDelay: '150ms' }}>
+            <div className="stat-icon-box" style={{ background: 'var(--status-failed-bg)', color: 'var(--status-failed)' }}><AlertCircle size={20} /></div>
+            <div><div className="stat-label">Failed</div><div className="stat-value">{counts.failed}</div></div>
+          </div>
         </div>
 
         { }
