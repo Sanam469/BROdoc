@@ -33,8 +33,8 @@ export default function ReviewEditor({ jobId, data, locked, onSaved }: Props) {
       onSaved(updated.extracted_data as ExtractedData)
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
-    } catch (e: any) {
-      setError(e.message)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Save failed')
     } finally { setSaving(false) }
   }
 

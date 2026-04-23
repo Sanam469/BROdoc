@@ -15,8 +15,8 @@ export default function ExportButtons({ jobId, disabled }: Props) {
     setLoading(true); setError(null)
     try {
       await exportJob(jobId, format)
-    } catch (e: any) {
-      setError(e.message || 'Export failed')
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Export failed')
     } finally { setLoading(false) }
   }
 

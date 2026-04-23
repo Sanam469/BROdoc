@@ -1,11 +1,11 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { FileText, LayoutDashboard, ClipboardList } from 'lucide-react'
+import { LayoutDashboard, ClipboardList } from 'lucide-react'
 
 export default function Sidebar() {
   const path = usePathname()
-  const isJobDetail = path.startsWith('/jobs/')
+
 
   return (
     <aside className="sidebar">

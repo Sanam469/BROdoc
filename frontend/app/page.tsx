@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { FileText, ArrowRight, Zap, Shield, Search, BarChart3, Clock } from 'lucide-react'
+import { ArrowRight, Zap, Search, BarChart3 } from 'lucide-react'
 
 export default function LandingPage() {
   return (

@@ -7,7 +7,7 @@ import {
 } from '@/lib/api'
 import { useSSE } from '@/hooks/useSSE'
 import ProgressTracker from '@/components/ProgressTracker'
-import { FileText, Image as ImageIcon, File, Activity, X, ArrowRight, ArrowLeft, CloudUpload, UploadCloud, Upload, AlertTriangle, Search, Inbox, ChevronLeft, ChevronRight, XCircle, Trash2, CheckCircle2, Clock, AlertCircle, Database } from 'lucide-react'
+import { FileText, Image as ImageIcon, File, Activity, X, ArrowRight, CloudUpload, UploadCloud, Upload, AlertTriangle, Search, Inbox, ChevronLeft, ChevronRight, XCircle, Trash2, CheckCircle2, Clock, AlertCircle, Database } from 'lucide-react'
 
 function Badge({ status }: { status: Job['status'] }) {
   const L: Record<string, string> = {
@@ -29,7 +29,7 @@ function ProgressPanel({ jobId, onClose }: { jobId: string; onClose: () => void 
 
   useEffect(() => {
     let alive = true
-    let id: ReturnType<typeof setInterval>
+    let id: ReturnType<typeof setInterval> | null = null
 
     const load = async () => {
       try {
@@ -38,7 +38,7 @@ function ProgressPanel({ jobId, onClose }: { jobId: string; onClose: () => void 
         if (alive) {
           setJob(j)
 
-          if (j.status !== 'queued' && j.status !== 'processing') {
+          if (j.status !== 'queued' && j.status !== 'processing' && id) {
             clearInterval(id)
           }
         }
@@ -47,7 +47,7 @@ function ProgressPanel({ jobId, onClose }: { jobId: string; onClose: () => void 
 
     load()
     id = setInterval(load, 2500)
-    return () => { alive = false; clearInterval(id) }
+    return () => { alive = false; if (id) clearInterval(id) }
   }, [jobId])
 
   return (
@@ -144,7 +144,7 @@ function InlineUpload({ onUploaded }: { onUploaded: (id: string) => void }) {
       const res = await uploadDocuments(files)
       setFiles([])
       if (res.length > 0) onUploaded(res[0].job_id)
-    } catch (e: any) { setError(e.message) }
+    } catch (e: unknown) { setError(e instanceof Error ? e.message : String(e)) }
     finally { setLoading(false) }
   }
 
@@ -219,7 +219,7 @@ export default function DashboardPage() {
     try { setData(await listJobs(p)) } catch {} finally { setLoading(false) }
   }, [])
 
-  useEffect(() => { reload(params) }, [])
+  useEffect(() => { reload(params) }, [reload, params])
 
   useEffect(() => {
     const hasActiveJobs = data.items.some(j => j.status === 'queued' || j.status === 'processing')
@@ -231,7 +231,7 @@ export default function DashboardPage() {
 
   const update = (patch: Partial<ListJobsParams>) => {
     const next = { ...params, ...patch, page: 1 }
-    setParams(next); reload(next)
+    setParams(next)
   }
 
   const [jobToDelete, setJobToDelete] = useState<string | null>(null)
@@ -257,8 +257,8 @@ export default function DashboardPage() {
       await deleteJob(id)
       if (activeJobId === id) setActiveJobId(null)
       reload(params)
-    } catch (err: any) {
-      alert("Failed to delete job: " + err.message)
+    } catch (err: unknown) {
+      alert("Failed to delete job: " + (err instanceof Error ? err.message : String(err)))
       reload(params) 
     }
   }
@@ -273,7 +273,7 @@ export default function DashboardPage() {
     if (j.status === 'completed' || j.status === 'finalized') {
       counts.completed += 1
     } else {
-      (counts as any)[j.status] = ((counts as any)[j.status]||0) + 1 
+      (counts as Record<string, number>)[j.status] = ((counts as Record<string, number>)[j.status]||0) + 1 
     }
   })
   return (
@@ -424,9 +424,9 @@ export default function DashboardPage() {
             {}
             {data.total_pages > 1 && (
               <div style={{ display:'flex', justifyContent:'center', alignItems: 'center', gap:12, marginTop:24 }}>
-                <button className="btn btn-secondary btn-sm" disabled={params.page===1} onClick={()=>{const n={...params,page:params.page!-1};setParams(n);reload(n)}}><ChevronLeft size={16} /> Prev</button>
+                <button className="btn btn-secondary btn-sm" disabled={params.page===1} onClick={()=>{const n={...params,page:params.page!-1};setParams(n)}}><ChevronLeft size={16} /> Prev</button>
                 <span style={{ fontSize:13, color:'var(--text-muted)', fontWeight: 500 }}>Page {params.page} of {data.total_pages}</span>
-                <button className="btn btn-secondary btn-sm" disabled={params.page===data.total_pages} onClick={()=>{const n={...params,page:params.page!+1};setParams(n);reload(n)}}>Next <ChevronRight size={16} /></button>
+                <button className="btn btn-secondary btn-sm" disabled={params.page===data.total_pages} onClick={()=>{const n={...params,page:params.page!+1};setParams(n)}}>Next <ChevronRight size={16} /></button>
               </div>
             )}
           </div>

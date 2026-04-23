@@ -4,6 +4,8 @@ import { uploadDocuments } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { CloudUpload, UploadCloud, FileUp, File, FileText, Image as ImageIcon, X, AlertTriangle, CheckCircle } from 'lucide-react'
 
+const ACCEPTED = ['.pdf', '.docx', '.doc', '.txt', '.png', '.jpg', '.jpeg']
+
 export default function UploadZone() {
   const [dragging, setDragging] = useState(false)
   const [files, setFiles]       = useState<File[]>([])
@@ -11,8 +13,6 @@ export default function UploadZone() {
   const [error, setError]       = useState<string | null>(null)
   const [success, setSuccess]   = useState<string | null>(null)
   const router = useRouter()
-
-  const ACCEPTED = ['.pdf','.docx','.doc','.txt','.png','.jpg','.jpeg']
 
   const addFiles = useCallback((incoming: FileList | null) => {
     if (!incoming) return
@@ -43,8 +43,8 @@ export default function UploadZone() {
       setSuccess(`${result.length} job${result.length > 1 ? 's' : ''} queued successfully! Redirecting to dashboard...`)
       setFiles([])
       setTimeout(() => router.push('/dashboard'), 1500)
-    } catch (e: any) {
-      setError(e.message || 'Upload failed')
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Upload failed')
     } finally {
       setLoading(false)
     }

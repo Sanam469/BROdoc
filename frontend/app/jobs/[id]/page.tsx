@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { useJob }               from '@/hooks/useJobs'
 import { useSSE }               from '@/hooks/useSSE'
 import ProgressTracker          from '@/components/ProgressTracker'
@@ -20,7 +20,7 @@ function StatusBadge({ status }: { status: Job['status'] }) {
 
 export default function JobDetailPage() {
   const { id }    = useParams<{ id: string }>()
-  const router    = useRouter()
+
   const { job, loading, error, refetch } = useJob(id, true)
 
   const sseEnabled = job?.status === 'queued' || job?.status === 'processing'
@@ -38,14 +38,14 @@ export default function JobDetailPage() {
   const handleFinalize = async () => {
     setFinalizing(true); setActionErr(null)
     try { await finalizeJob(id); refetch() }
-    catch (e: any) { setActionErr(e.message) }
+    catch (e: unknown) { setActionErr(e instanceof Error ? e.message : 'Finalize failed') }
     finally { setFinalizing(false) }
   }
 
   const handleRetry = async () => {
     setRetrying(true); setActionErr(null)
     try { await retryJob(id); refetch() }
-    catch (e: any) { setActionErr(e.message) }
+    catch (e: unknown) { setActionErr(e instanceof Error ? e.message : 'Retry failed') }
     finally { setRetrying(false) }
   }
 
@@ -143,7 +143,7 @@ export default function JobDetailPage() {
                     jobId={id}
                     data={job.extracted_data as ExtractedData}
                     locked={isLocked}
-                    onSaved={(d) => {}}
+                    onSaved={() => {}}
                   />
                 </div>
               </div>
