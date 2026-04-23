@@ -377,7 +377,7 @@ export default function DashboardPage() {
                   </thead>
                   <tbody>
                     {data.items.map((job, i) => {
-                      const canDelete = job.status !== 'queued' && job.status !== 'processing'
+                      const canDelete = true
                       return (
                         <tr
                           key={job.id}
