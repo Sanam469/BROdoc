@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Job, formatFileSize, formatRelative, ListJobsParams, listJobs, JobsResponse } from '@/lib/api'
-import { FileText, Image as ImageIcon, File, Search, ArrowDown, ArrowUp, ArrowUpDown, Inbox, ChevronLeft, ChevronRight } from 'lucide-react'
+import { FileText, Image as ImageIcon, File, Search, ArrowDown, ArrowUp, ArrowUpDown, Inbox, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react'
 
 interface Props {
   initialData: JobsResponse
@@ -126,22 +126,20 @@ export default function JobsTable({ initialData }: Props) {
                 <th className="sortable" onClick={() => sort('file_size')} style={{ display: 'flex', alignItems: 'center' }}>
                   Size <SortIcon col="file_size" />
                 </th>
-                <th className="sortable" onClick={() => sort('created_at')} style={{ display: 'flex', alignItems: 'center' }}>
-                  Created <SortIcon col="created_at" />
-                </th>
-                <th>Retries</th>
+                <th style={{ width: 130 }}>Created</th>
+                <th style={{ width: 80 }}>Retries</th>
+                <th style={{ width: 50 }}></th>
               </tr>
             </thead>
             <tbody>
               {data.items.map((job, i) => (
                 <tr
                   key={job.id}
-                  onClick={() => router.push(`/jobs/${job.id}`)}
-                  style={{ animationDelay: `${i * 40}ms`, cursor: 'pointer' }}
+                  style={{ animationDelay: `${i * 40}ms` }}
                   className="animate-fadeinup"
                 >
-                  <td><FileIcon type={job.file_type} /></td>
-                  <td>
+                  <td onClick={() => router.push(`/jobs/${job.id}`)} style={{ cursor: 'pointer' }}><FileIcon type={job.file_type} /></td>
+                  <td onClick={() => router.push(`/jobs/${job.id}`)} style={{ cursor: 'pointer' }}>
                     <div style={{ fontWeight: 600, maxWidth: 200 }} className="truncate" title={job.filename}>
                       {job.filename}
                     </div>
@@ -149,23 +147,44 @@ export default function JobsTable({ initialData }: Props) {
                       {job.id.slice(0, 8)}...
                     </div>
                   </td>
-                  <td><StatusBadge status={job.status} /></td>
-                  <td>
+                  <td onClick={() => router.push(`/jobs/${job.id}`)} style={{ cursor: 'pointer' }}><StatusBadge status={job.status} /></td>
+                  <td onClick={() => router.push(`/jobs/${job.id}`)} style={{ cursor: 'pointer' }}>
                     <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
                       {job.current_stage || '—'}
                     </span>
                   </td>
-                  <td style={{ color: 'var(--text-secondary)' }}>{formatFileSize(job.file_size)}</td>
-                  <td>
+                  <td onClick={() => router.push(`/jobs/${job.id}`)} style={{ cursor: 'pointer', color: 'var(--text-secondary)' }}>{formatFileSize(job.file_size)}</td>
+                  <td onClick={() => router.push(`/jobs/${job.id}`)} style={{ cursor: 'pointer' }}>
                     <span title={job.created_at} style={{ color: 'var(--text-secondary)' }}>
                       {formatRelative(job.created_at)}
                     </span>
                   </td>
-                  <td>
+                  <td onClick={() => router.push(`/jobs/${job.id}`)} style={{ cursor: 'pointer' }}>
                     {job.retry_count > 0
                       ? <span style={{ color: 'var(--status-failed)', fontWeight: 600 }}>×{job.retry_count}</span>
                       : <span style={{ color: 'var(--text-muted)' }}>—</span>
                     }
+                  </td>
+                  <td>
+                    <button 
+                      className="btn btn-ghost btn-sm" 
+                      style={{ color: 'var(--status-failed)', padding: '4px 8px' }}
+                      title="Delete Job"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        if (confirm('Delete this job?')) {
+                          try {
+                            const { deleteJob } = await import('@/lib/api');
+                            await deleteJob(job.id);
+                            reload(params); // Refresh the list
+                          } catch (err) {
+                            alert('Failed to delete job');
+                          }
+                        }
+                      }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </td>
                 </tr>
               ))}
