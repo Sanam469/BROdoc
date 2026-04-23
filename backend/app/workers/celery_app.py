@@ -32,6 +32,14 @@ celery_app.conf.update(
     include=["app.workers.tasks"],
 
     broker_connection_retry_on_startup=True,
+    
+    # Force SSL for Upstash/Production
+    broker_use_ssl={
+        'ssl_cert_reqs': 'none'
+    },
+    redis_backend_use_ssl={
+        'ssl_cert_reqs': 'none'
+    },
 )
 
 @celery_app.task(name="health_check")
