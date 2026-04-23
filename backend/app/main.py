@@ -24,6 +24,7 @@ async def lifespan(app: FastAPI):
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
     logger.info(f"📁 Upload directory ready: {settings.UPLOAD_DIR}")
 
+
     try:
         await init_db()
         logger.info("✅ Database connected and tables verified.")
@@ -65,6 +66,17 @@ app.include_router(review.router,   prefix=API_PREFIX, tags=["Review"])
 app.include_router(finalize.router, prefix=API_PREFIX, tags=["Finalize"])
 app.include_router(retry.router,    prefix=API_PREFIX, tags=["Retry"])
 app.include_router(export.router,   prefix=API_PREFIX, tags=["Export"])
+
+@app.get("/api/v1/debug/models")
+async def list_available_models():
+    try:
+        from google import genai
+        from app.core.config import settings
+        client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        models = client.models.list()
+        return {"models": [m.name for m in models]}
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.get("/health", tags=["Health"])
 async def health_check():
