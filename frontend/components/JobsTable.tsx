@@ -8,7 +8,7 @@ interface Props {
   initialData: JobsResponse
 }
 
-const STATUS_ORDER = ['queued','processing','completed','failed','finalized']
+const STATUS_ORDER = ['queued', 'processing', 'completed', 'failed', 'finalized']
 
 function StatusBadge({ status }: { status: Job['status'] }) {
   const labels: Record<string, string> = {
@@ -31,9 +31,9 @@ function FileIcon({ type }: { type: string }) {
 
 export default function JobsTable({ initialData }: Props) {
   const router = useRouter()
-  const [data, setData]       = useState<JobsResponse>(initialData)
+  const [data, setData] = useState<JobsResponse>(initialData)
   const [loading, setLoading] = useState(false)
-  const [params, setParams]   = useState<ListJobsParams>({
+  const [params, setParams] = useState<ListJobsParams>({
     sort_by: 'created_at', order: 'desc', page: 1, per_page: 20
   })
 
@@ -63,7 +63,7 @@ export default function JobsTable({ initialData }: Props) {
 
   const SortIcon = ({ col }: { col: string }) => {
     if (params.sort_by !== col) return <ArrowUpDown size={14} style={{ opacity: 0.3, marginLeft: 4 }} />
-    return params.order === 'desc' 
+    return params.order === 'desc'
       ? <ArrowDown size={14} style={{ color: 'var(--green-primary)', marginLeft: 4 }} />
       : <ArrowUp size={14} style={{ color: 'var(--green-primary)', marginLeft: 4 }} />
   }
@@ -76,7 +76,7 @@ export default function JobsTable({ initialData }: Props) {
 
   return (
     <div>
-      {}
+      { }
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
         <div style={{ position: 'relative', maxWidth: 280, width: '100%' }}>
           <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
@@ -105,7 +105,7 @@ export default function JobsTable({ initialData }: Props) {
         </div>
       </div>
 
-      {}
+      { }
       <div className="table-wrapper">
         {data.items.length === 0 ? (
           <div className="empty-state">
@@ -166,10 +166,10 @@ export default function JobsTable({ initialData }: Props) {
                     }
                   </td>
                   <td style={{ width: 50, textAlign: 'center' }}>
-                    <button 
-                      className="btn btn-ghost btn-sm" 
-                      style={{ 
-                        color: 'var(--status-failed)', 
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      style={{
+                        color: 'var(--status-failed)',
                         padding: '4px 8px',
                         display: 'flex',
                         alignItems: 'center',
@@ -190,7 +190,7 @@ export default function JobsTable({ initialData }: Props) {
                         }
                       }}
                     >
-                      <span style={{ fontSize: 11, fontWeight: 'bold' }}>DELETE</span>
+                      <Trash2 size={16} />
                     </button>
                   </td>
                 </tr>
@@ -200,7 +200,7 @@ export default function JobsTable({ initialData }: Props) {
         )}
       </div>
 
-      {}
+      { }
       {data.total_pages > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 24 }}>
           <button className="btn btn-secondary btn-sm" disabled={params.page === 1} onClick={() => changePage(params.page! - 1)}>
