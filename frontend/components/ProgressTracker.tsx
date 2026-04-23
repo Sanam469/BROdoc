@@ -1,4 +1,5 @@
 'use client'
+import { useState, useEffect } from 'react'
 import { ProgressEvent, STAGE_LABELS } from '@/lib/api'
 import { Check, X, Clock } from 'lucide-react'
 
@@ -19,6 +20,9 @@ interface Props {
 }
 
 export default function ProgressTracker({ currentStage, events, status }: Props) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
   const stageIndex = STAGES.indexOf(currentStage || 'job_queued')
   const failed = status === 'failed'
 
@@ -36,7 +40,7 @@ export default function ProgressTracker({ currentStage, events, status }: Props)
 
   const getEventTime = (stage: string): string | null => {
     const ev = [...events].reverse().find(e => e.stage === stage)
-    if (!ev) return null
+    if (!ev || !mounted) return null
     return new Date(ev.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   }
 

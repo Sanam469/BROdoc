@@ -106,7 +106,7 @@ function ProgressPanel({ jobId, onClose }: { jobId: string; onClose: () => void 
           <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Event Log</div>
           {[...events].reverse().map((ev) => (
             <div key={ev.timestamp + ev.stage} style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', paddingBottom: 4, borderBottom: '1px dashed var(--border)', display: 'flex', gap: 8 }}>
-              <span style={{ color: 'var(--text-muted)', flexShrink: 0 }}>{new Date(ev.timestamp).toLocaleTimeString()}</span>
+              <span style={{ color: 'var(--text-muted)', flexShrink: 0 }}>{mounted ? new Date(ev.timestamp).toLocaleTimeString() : '...'}</span>
               <span>{ev.message}</span>
             </div>
           ))}
@@ -209,12 +209,15 @@ function InlineUpload({ onUploaded }: { onUploaded: (id: string) => void }) {
 export default function DashboardPage() {
   const router = useRouter()
   const { user } = useAuth()
+  const [mounted, setMounted] = useState(false)
   const [data, setData] = useState<JobsResponse>({ items: [], total: 0, page: 1, per_page: 20, total_pages: 0 })
   const [loading, setLoading] = useState(false)
   const [showUpload, setShowUpload] = useState(false)
   const [activeJobId, setActiveJobId] = useState<string | null>(null)
   const [params, setParams] = useState<ListJobsParams>({ sort_by: 'created_at', order: 'desc', page: 1, per_page: 20 })
   const searchRef = useRef<ReturnType<typeof setTimeout>>()
+
+  useEffect(() => { setMounted(true) }, [])
 
   const reload = useCallback(async (p: ListJobsParams) => {
     setLoading(true)
@@ -415,12 +418,14 @@ export default function DashboardPage() {
                           <td><FileIcon type={job.file_type} /></td>
                           <td>
                             <div style={{ fontWeight: 600, maxWidth: 240 }} className="truncate" title={job.filename}>{job.filename}</div>
-                            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{job.id.slice(0, 8)}…</div>
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                              {mounted ? new Date(job.created_at).toLocaleDateString() : '...'}
+                            </div>
                           </td>
                           <td><Badge status={job.status} /></td>
                           <td><span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{job.current_stage || '—'}</span></td>
                           <td style={{ color: 'var(--text-secondary)' }}>{formatFileSize(job.file_size)}</td>
-                          <td><span style={{ color: 'var(--text-secondary)' }} title={job.created_at}>{formatRelative(job.created_at)}</span></td>
+                          <td><span style={{ color: 'var(--text-secondary)' }} title={job.created_at}>{mounted ? formatRelative(job.created_at) : '...'}</span></td>
                           <td>{job.retry_count > 0 ? <span style={{ color: 'var(--status-failed)', fontWeight: 700 }}>×{job.retry_count}</span> : <span style={{ color: 'var(--text-muted)' }}>—</span>}</td>
                           <td>
                             {canDelete && (

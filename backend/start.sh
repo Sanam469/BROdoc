@@ -1,6 +1,9 @@
 #!/bin/bash
 echo "--- Starting BroDoc Services ---"
 
+# Ensure app is in Python path
+export PYTHONPATH=$PYTHONPATH:.
+
 # Start Celery worker
 echo "Starting Celery worker (Queue: documents)..."
 celery -A app.workers.celery_app worker --loglevel=info -Q documents -c 1 &
