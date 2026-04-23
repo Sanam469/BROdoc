@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.db.database import init_db
 
-from app.api.routes import upload, jobs, progress, review, finalize, retry, export
+from app.api.routes import upload, jobs, progress, review, finalize, retry, export, auth
 
 logging.basicConfig(
     level=logging.DEBUG if settings.DEBUG else logging.INFO,
@@ -58,6 +58,7 @@ app.add_middleware(
 
 API_PREFIX = "/api/v1"
 
+app.include_router(auth.router,     prefix=API_PREFIX, tags=["Auth"])
 app.include_router(upload.router,   prefix=API_PREFIX, tags=["Upload"])
 app.include_router(jobs.router,     prefix=API_PREFIX, tags=["Jobs"])
 app.include_router(progress.router, prefix=API_PREFIX, tags=["Progress (SSE)"])

@@ -48,6 +48,7 @@ async def init_db():
     async with engine.begin() as conn:
 
         from app.models import document  
+        from app.models import user  
 
         await conn.run_sync(Base.metadata.create_all)
         logger.info("✅ Database tables created / verified successfully.")

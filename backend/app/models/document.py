@@ -8,6 +8,7 @@ from sqlalchemy import (
     DateTime,
     Enum as SAEnum,
     Text,
+    ForeignKey,
     func,
 )
 from sqlalchemy.dialects.postgresql import UUID, JSONB
@@ -31,6 +32,14 @@ class DocumentJob(Base):
         default=uuid.uuid4,
         index=True,
         comment="Unique job identifier (UUID). Used in all API URLs: /jobs/{id}"
+    )
+
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+        comment="Owner of this job. NULL for legacy jobs created before auth."
     )
 
     filename = Column(

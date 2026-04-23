@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
+from app.core.deps import get_current_user
+from app.models.user import User
 from app.services.job_service import update_review
 from app.schemas.document import ReviewUpdateRequest, JobDetailResponse
 
@@ -17,7 +19,8 @@ async def review_job(
     job_id: str,
     updates: ReviewUpdateRequest,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     
-    job = await update_review(db, job_id, updates)
+    job = await update_review(db, job_id, updates, user_id=str(current_user.id))
     return JobDetailResponse.model_validate(job)

@@ -28,5 +28,9 @@ pillow
 # ---- AI Engine (Gemini) ------------------------------------- #
 google-genai
 
+# ---- Authentication ----------------------------------------- #
+passlib[bcrypt]                  # Password hashing with bcrypt
+python-jose[cryptography]        # JWT token creation & verification
+
 # ---- Utilities ---------------------------------------------- #
 python-dotenv==1.0.1            # Load .env files

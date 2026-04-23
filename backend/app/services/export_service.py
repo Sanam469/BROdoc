@@ -10,9 +10,9 @@ from app.services.job_service import get_job_by_id
 
 logger = logging.getLogger(__name__)
 
-async def export_job_as_json(db: AsyncSession, job_id: str) -> dict:
+async def export_job_as_json(db: AsyncSession, job_id: str, user_id: str = "") -> dict:
     
-    job = await get_job_by_id(db, job_id)
+    job = await get_job_by_id(db, job_id, user_id=user_id)
     _assert_exportable(job)
 
     export_data = {
@@ -30,9 +30,9 @@ async def export_job_as_json(db: AsyncSession, job_id: str) -> dict:
     logger.info(f"[ExportService] JSON export for job {job_id}")
     return export_data
 
-async def export_job_as_csv(db: AsyncSession, job_id: str) -> str:
+async def export_job_as_csv(db: AsyncSession, job_id: str, user_id: str = "") -> str:
     
-    job = await get_job_by_id(db, job_id)
+    job = await get_job_by_id(db, job_id, user_id=user_id)
     _assert_exportable(job)
 
     output = io.StringIO()

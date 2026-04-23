@@ -7,6 +7,8 @@ from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
+from app.core.deps import get_current_user
+from app.models.user import User
 from app.services.job_service import create_job
 from app.schemas.document import UploadResponse
 from app.workers.tasks import process_document
@@ -27,6 +29,7 @@ os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 async def upload_documents(
     files: List[UploadFile] = File(..., description="One or more document files"),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     
     if not files:
@@ -69,6 +72,7 @@ async def upload_documents(
             file_path=file_path,
             file_size=len(content),
             file_type=ext,
+            user_id=str(current_user.id),
         )
 
         process_document.delay(str(job.id))

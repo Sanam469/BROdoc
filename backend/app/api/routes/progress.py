@@ -9,6 +9,8 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
+from app.core.deps import get_current_user
+from app.models.user import User
 from app.services.job_service import get_job_by_id
 from app.models.document import JobStatus
 from app.core.config import settings
@@ -29,9 +31,10 @@ def format_sse(data: dict) -> str:
 async def stream_progress(
     job_id: str,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     
-    job = await get_job_by_id(db, job_id)
+    job = await get_job_by_id(db, job_id, user_id=str(current_user.id))
 
     async def event_generator():
 
