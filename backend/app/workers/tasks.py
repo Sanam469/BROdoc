@@ -62,10 +62,15 @@ def publish_progress(job_id: str, stage: str, status: str, message: str):
         logger.error(f"[PubSub] Publish failed for job {job_id}: {e}")
 
 def update_job(db: Session, job_id: str, **kwargs):
-    db.query(DocumentJob).filter(
-        DocumentJob.id == job_id
-    ).update({**kwargs, "updated_at": datetime.now(timezone.utc)})
-    db.commit()
+    try:
+        db_id = uuid.UUID(job_id) if isinstance(job_id, str) else job_id
+        db.query(DocumentJob).filter(
+            DocumentJob.id == db_id
+        ).update({**kwargs, "updated_at": datetime.now(timezone.utc)})
+        db.commit()
+    except Exception as e:
+        logger.error(f"[Update Error] Failed to update job {job_id}: {e}")
+        db.rollback()
 
 def extract_document_text(file_path: str, filename: str) -> str:
     
@@ -174,8 +179,10 @@ def process_document(self, job_id: str):
     logger.info(f"[Task] Starting process_document for job_id={job_id}")
 
     try:
-        job = db.query(DocumentJob).filter(DocumentJob.id == job_id).first()
+        db_id = uuid.UUID(job_id) if isinstance(job_id, str) else job_id
+        job = db.query(DocumentJob).filter(DocumentJob.id == db_id).first()
         if not job:
+            logger.error(f"[Task Error] Job {job_id} not found in database!")
             return {"error": "Job not found"}
 
         update_job(db, job_id, celery_task_id=self.request.id)
