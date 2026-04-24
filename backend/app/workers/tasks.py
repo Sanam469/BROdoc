@@ -211,19 +211,31 @@ def process_document(self, job_id: str):
         return {"job_id": job_id, "status": "completed"}
 
     except Exception as exc:
-        error_msg = str(exc)
+        error_msg = str(exc).lower()
 
+        # [RETRY LOGIC] Handle Internet / Network Errors with a 3-second wait as requested
+        if any(kw in error_msg for kw in ["connection", "dns", "network", "offline", "unavailable"]):
+            logger.warning(f"[Network Error] Job {job_id} hit a connection issue. Waiting 3s before failing...")
+            publish_progress(job_id, "job_paused", "in_progress", "Internet connection issues detected. Waiting 3 seconds...")
+            time.sleep(3)
+            
+            # Instead of automatic retry, we mark as FAILED to allow manual retry from UI
+            update_job(db, job_id, status=JobStatus.FAILED, current_stage="job_failed", error_message="Processing failed: No internet connection detected.")
+            publish_progress(job_id, "job_failed", "failed", "Processing failed: Internet connection unavailable. Please check your network and click 'Retry'.")
+            return {"job_id": job_id, "status": "failed", "reason": "network"}
+
+        # [RETRY LOGIC] Handle Rate Limits (429) - keeping automatic retry for this
         if "429" in error_msg:
             logger.warning(f"[Rate Limit Hit] Retrying job {job_id} in 20s...")
             publish_progress(job_id, "job_paused", "in_progress", "Gemini rate limit hit. Sleeping for 20s before retry...")
-            db.close() 
+            if db: db.close() 
             raise self.retry(exc=exc, countdown=20)
 
         logger.error(f"[Task] ❌ Job {job_id} failed: {error_msg}", exc_info=True)
 
         try:
-            update_job(db, job_id, status=JobStatus.FAILED, current_stage="job_failed", error_message=error_msg)
-            publish_progress(job_id, "job_failed", "failed", f"Processing failed: {error_msg[:200]}")
+            update_job(db, job_id, status=JobStatus.FAILED, current_stage="job_failed", error_message=str(exc))
+            publish_progress(job_id, "job_failed", "failed", f"Processing failed: {str(exc)[:200]}")
         except Exception as db_exc:
             pass
 

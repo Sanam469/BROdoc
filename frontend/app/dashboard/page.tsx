@@ -2,12 +2,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  listJobs, uploadDocuments, JobsResponse, Job, deleteJob,
+  listJobs, uploadDocuments, JobsResponse, Job, deleteJob, retryJob,
   formatFileSize, formatRelative, ListJobsParams
 } from '@/lib/api'
 import { useSSE } from '@/hooks/useSSE'
 import ProgressTracker from '@/components/ProgressTracker'
-import { FileText, Image as ImageIcon, File, Activity, X, ArrowRight, CloudUpload, UploadCloud, Upload, AlertTriangle, Search, Inbox, ChevronLeft, ChevronRight, XCircle, Trash2, CheckCircle2, Clock, AlertCircle, Database } from 'lucide-react'
+import { FileText, Image as ImageIcon, File, Activity, X, ArrowRight, CloudUpload, UploadCloud, Upload, AlertTriangle, Search, Inbox, ChevronLeft, ChevronRight, XCircle, Trash2, CheckCircle2, Clock, AlertCircle, Database, RotateCcw } from 'lucide-react'
 
 function Badge({ status }: { status: Job['status'] }) {
   const L: Record<string, string> = {
@@ -114,7 +114,23 @@ function ProgressPanel({ jobId, onClose }: { jobId: string; onClose: () => void 
 
       {}
       {job && (
-        <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)' }}>
+        <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {job.status === 'failed' && (
+            <button 
+              className="btn btn-primary" 
+              style={{ width: '100%', justifyContent: 'center' }}
+              onClick={async () => {
+                try {
+                  await retryJob(job.id)
+                  // Parent will refresh via interval
+                } catch (e) {
+                  alert("Retry failed: " + (e instanceof Error ? e.message : String(e)))
+                }
+              }}
+            >
+              <RotateCcw size={14} /> Retry Processing
+            </button>
+          )}
           <a href={`/jobs/${job.id}`} className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
             View Full Details <ArrowRight size={14} />
           </a>
@@ -262,6 +278,20 @@ export default function DashboardPage() {
       reload(params) 
     }
   }
+
+  const [retryingId, setRetryingId] = useState<string | null>(null)
+  const handleRetry = async (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
+    setRetryingId(id)
+    try {
+      await retryJob(id)
+      reload(params)
+    } catch (err) {
+      alert("Retry failed: " + (err instanceof Error ? err.message : String(err)))
+    } finally {
+      setRetryingId(null)
+    }
+  }
   const handleUploaded = (jobId: string) => {
     setShowUpload(false)
     setActiveJobId(jobId)
@@ -402,16 +432,29 @@ export default function DashboardPage() {
                           <td><span style={{ color:'var(--text-secondary)' }} title={job.created_at}>{formatRelative(job.created_at)}</span></td>
                           <td>{job.retry_count>0?<span style={{color:'var(--status-failed)',fontWeight:700}}>×{job.retry_count}</span>:<span style={{color:'var(--text-muted)'}}>—</span>}</td>
                           <td>
-                            {canDelete && (
-                              <button 
-                                className="btn btn-ghost btn-sm" 
-                                style={{ color: 'var(--status-failed)', padding: '4px', opacity: 0.6 }}
-                                onClick={(e) => triggerDelete(job.id, e)}
-                                title="Delete Document"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            )}
+                            <div style={{ display: 'flex', gap: 4 }}>
+                              {job.status === 'failed' && (
+                                <button 
+                                  className="btn btn-ghost btn-sm" 
+                                  style={{ color: 'var(--blue-primary)', padding: '4px' }}
+                                  onClick={(e) => handleRetry(job.id, e)}
+                                  disabled={retryingId === job.id}
+                                  title="Retry Job"
+                                >
+                                  {retryingId === job.id ? <span className="spinner" style={{width:14,height:14}}/> : <RotateCcw size={16} />}
+                                </button>
+                              )}
+                              {canDelete && (
+                                <button 
+                                  className="btn btn-ghost btn-sm" 
+                                  style={{ color: 'var(--status-failed)', padding: '4px', opacity: 0.6 }}
+                                  onClick={(e) => triggerDelete(job.id, e)}
+                                  title="Delete Document"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       )
