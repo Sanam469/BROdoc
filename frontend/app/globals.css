@@ -661,6 +661,18 @@ tbody tr:hover { background: #f9fbfa; }
 .alert-success { background: var(--status-completed-bg); color: var(--status-completed); border: 1px solid #B8F0D0; }
 .alert-info    { background: var(--blue-light);          color: var(--blue-accent);      border: 1px solid #C0D8FF; }
 
+.job-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 480px) {
+  .job-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 .progress-panel {
@@ -701,7 +713,7 @@ tbody tr:hover { background: #f9fbfa; }
 
 /* --- RESPONSIVE DESIGN --- */
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .page-header { padding: 16px 24px; }
   .page-body { padding: 24px; }
 }
@@ -712,17 +724,9 @@ tbody tr:hover { background: #f9fbfa; }
   gap: 24px;
 }
 
-.compact-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-@media (max-width: 768px) {
+/* Tablet & Mobile Breakpoints */
+@media (max-width: 992px) {
   .responsive-grid {
-    grid-template-columns: 1fr;
-  }
-  .compact-grid {
     grid-template-columns: 1fr;
   }
 }
