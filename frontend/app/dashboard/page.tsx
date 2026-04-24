@@ -215,10 +215,21 @@ export default function DashboardPage() {
   const router = useRouter()
   const [data, setData]           = useState<JobsResponse>({ items:[], total:0, page:1, per_page:20, total_pages:0 })
   const [loading, setLoading]     = useState(false)
+  const [showWakeup, setShowWakeup] = useState(false)
   const [showUpload, setShowUpload] = useState(false)
   const [activeJobId, setActiveJobId] = useState<string | null>(null)
   const [params, setParams]       = useState<ListJobsParams>({ sort_by:'created_at', order:'desc', page:1, per_page:20 })
   const searchRef = useRef<ReturnType<typeof setTimeout>>()
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>
+    if (loading) {
+      timer = setTimeout(() => setShowWakeup(true), 5000)
+    } else {
+      setShowWakeup(false)
+    }
+    return () => clearTimeout(timer)
+  }, [loading])
 
   const reload = useCallback(async (p: ListJobsParams) => {
     setLoading(true)
@@ -341,6 +352,12 @@ export default function DashboardPage() {
 
       {}
       <div style={{ padding:'24px 32px', display:'flex', flexDirection:'column', gap:20, flex:1 }}>
+        
+        {showWakeup && loading && (
+          <div className="alert alert-info animate-fadein" style={{ marginBottom: 0 }}>
+            <Clock size={18} /> <strong>System Status:</strong> Celery slept, kindly wait for a minute...
+          </div>
+        )}
 
         {}
         <div className="stats-grid">
