@@ -51,17 +51,7 @@ function ProgressPanel({ jobId, onClose }: { jobId: string; onClose: () => void 
   }, [jobId])
 
   return (
-    <div style={{
-      width: 320, flexShrink: 0,
-      background: 'var(--white)',
-      border: '1px solid var(--border)',
-      borderRadius: 'var(--radius-lg)',
-      boxShadow: 'var(--shadow-lg)',
-      display: 'flex', flexDirection: 'column',
-      maxHeight: 'calc(100vh - 140px)',
-      position: 'sticky', top: 76,
-      animation: 'slideInRight 0.3s cubic-bezier(0.4,0,0.2,1)',
-    }}>
+    <div className="progress-panel">
       {}
       <div style={{
         padding: '14px 16px', borderBottom: '1px solid var(--border)',
@@ -380,7 +370,7 @@ export default function DashboardPage() {
         )}
 
         {}
-        <div style={{ display:'flex', gap:24, alignItems:'flex-start' }}>
+        <div className="responsive-grid" style={{ alignItems: 'flex-start' }}>
 
           {}
           <div style={{ flex:1, minWidth:0 }}>

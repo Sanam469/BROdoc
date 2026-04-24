@@ -73,7 +73,7 @@ export default function JobDetailPage() {
   return (
     <>
       {}
-      <div className="page-header">
+      <div className="page-header" style={{ flexDirection: 'row', alignItems: 'center' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
             <Link href="/dashboard" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: 13, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -102,7 +102,7 @@ export default function JobDetailPage() {
       <div className="page-body">
         {actionErr && <div className="alert alert-error"><AlertTriangle size={16} /> {actionErr}</div>}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24, alignItems: 'start' }}>
+        <div className="responsive-grid" style={{ alignItems: 'start' }}>
           {}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
@@ -113,7 +113,7 @@ export default function JobDetailPage() {
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' }}>{job.id}</span>
               </div>
               <div className="card-body">
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px 20px' }}>
                   {[
                     { label: 'File Size',  value: formatFileSize(job.file_size) },
                     { label: 'File Type',  value: job.file_type.toUpperCase() },
