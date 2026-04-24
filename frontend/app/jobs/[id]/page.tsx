@@ -113,7 +113,7 @@ export default function JobDetailPage() {
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' }}>{job.id}</span>
               </div>
               <div className="card-body">
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px 20px' }}>
+                <div className="compact-grid">
                   {[
                     { label: 'File Size',  value: formatFileSize(job.file_size) },
                     { label: 'File Type',  value: job.file_type.toUpperCase() },
@@ -122,9 +122,9 @@ export default function JobDetailPage() {
                     { label: 'Retries',    value: `${job.retry_count} / 3` },
                     { label: 'Celery ID',  value: job.celery_task_id?.slice(0,16) + '...' || '—' },
                   ].map(m => (
-                    <div key={m.label}>
+                    <div key={m.label} style={{ minWidth: 0 }}>
                       <div className="form-label" style={{ marginBottom: 4 }}>{m.label}</div>
-                      <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)' }}>{m.value}</div>
+                      <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)' }} className="truncate">{m.value}</div>
                     </div>
                   ))}
                 </div>

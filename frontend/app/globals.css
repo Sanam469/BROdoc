@@ -701,7 +701,7 @@ tbody tr:hover { background: #f9fbfa; }
 
 /* --- RESPONSIVE DESIGN --- */
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .page-header { padding: 16px 24px; }
   .page-body { padding: 24px; }
 }
@@ -712,8 +712,17 @@ tbody tr:hover { background: #f9fbfa; }
   gap: 24px;
 }
 
-@media (max-width: 1024px) {
+.compact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
   .responsive-grid {
+    grid-template-columns: 1fr;
+  }
+  .compact-grid {
     grid-template-columns: 1fr;
   }
 }
